@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 
-from typing import List
-
 """This module contains a sum_list  function which
 takes a List[float] as argument and
 returns their sum as a float.
 """
+
+from typing import List
 
 
 def sum_list(input_list: List[float]) -> float:
