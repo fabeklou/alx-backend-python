@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
 
+"""This module contains a function that waits for
+a given number of random delays and returns
+the sorted list of the delays
+"""
+
 import asyncio
 from typing import List
 import heapq
