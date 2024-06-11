@@ -6,10 +6,9 @@ that yields random values
 
 import asyncio
 import random
-from typing import AsyncGenerator, Any
 
 
-async def async_generator() -> AsyncGenerator[float, Any]:
+async def async_generator():
     """
     Asynchronous generator that yields random values.
 
