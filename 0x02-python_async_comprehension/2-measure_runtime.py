@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 """
 This module contains a function to measure the runtime
 of an asynchronous comprehension.
