@@ -116,6 +116,38 @@ class TestGithubOrgClient(unittest.TestCase):
             mock_get_json.assert_called_once_with('http://xclr.io')
             mock_pru.assert_called_once()
 
+    @parameterized.expand([
+        param(repo={"license": {"key": "my_license"}},
+              license_key="my_license",
+              expected=True),
+        param(repo={"license": {"key": "other_license"}},
+              license_key="my_license",
+              expected=False)
+    ])
+    def test_has_license(self, repo, license_key, expected):
+        """
+        Test the `has_license` method of the GithubOrgClient class.
+
+        Args:
+            repo (str): The name of the repository to check
+                for the license.
+            license_key (str): The license key to check for.
+            expected (bool): The expected result of the
+                `has_license` method.
+
+        Returns:
+            None
+
+        Raises:
+            AssertionError: If the actual result of the `has_license`
+                method does not match the expected result.
+        """
+        has_license = GithubOrgClient.has_license(repo, license_key)
+        if expected:
+            self.assertTrue(has_license)
+        else:
+            self.assertFalse(has_license)
+
 
 if __name__ == '__main__':
     unittest.main()
