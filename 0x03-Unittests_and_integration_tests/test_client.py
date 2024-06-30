@@ -83,13 +83,8 @@ class TestGithubOrgClient(unittest.TestCase):
             self.assertEqual(github_client._public_repos_url, repos_url)
             mock_org.assert_called_once()
 
-    @parameterized.expand([
-        param(license='MIT', name='NestJS'),
-        param(license=None, name='xclr')
-    ])
     @patch('client.get_json')
-    def test_public_repos(
-            self, mock_get_json, license: Union[str, None], name: str):
+    def test_public_repos(self, mock_get_json):
         """
         Test case for the public_repos method of the GithubOrgClient class.
 
@@ -104,8 +99,9 @@ class TestGithubOrgClient(unittest.TestCase):
         """
 
         payload = [
-            {'name': name,
-             'license': {'key': license} if license else None}
+            {"name": "NestJS", "license": {"key": "MIT"}},
+            {"name": "ReactJS", "license": {"key": "apache-2.0"}},
+            {"name": "PostgreSQL", "license": {"key": "BSD"}},
         ]
         mock_get_json.return_value = payload
 
@@ -114,8 +110,9 @@ class TestGithubOrgClient(unittest.TestCase):
             mock_pru.return_value = 'http://xclr.io'
 
             github_client = GithubOrgClient('xclr')
+            repos = github_client.public_repos()
 
-            self.assertEqual(github_client.public_repos(license), [name])
+            self.assertEqual(repos, ["NestJS", "ReactJS", "PostgreSQL"])
             mock_get_json.assert_called_once_with('http://xclr.io')
             mock_pru.assert_called_once()
 
