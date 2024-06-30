@@ -5,7 +5,7 @@ This module contains unit tests for the GithubOrgClient
 class in the client module.
 
 Author: [Fabrice Eklou]
-Date: [June 29, 2024]
+Date: [June 30, 2024]
 """
 
 import unittest
@@ -13,7 +13,7 @@ from unittest.mock import Mock, MagicMock, patch, PropertyMock
 from parameterized import parameterized, param
 from client import GithubOrgClient
 from utils import get_json
-from typing import List, Dict
+from typing import List, Dict, Union
 
 
 class TestGithubOrgClient(unittest.TestCase):
@@ -82,6 +82,42 @@ class TestGithubOrgClient(unittest.TestCase):
 
             self.assertEqual(github_client._public_repos_url, repos_url)
             mock_org.assert_called_once()
+
+    @parameterized.expand([
+        param(license='MIT', name='NestJS'),
+        param(license=None, name='xclr')
+    ])
+    @patch('client.get_json')
+    def test_public_repos(
+            self, mock_get_json, license: Union[str, None], name: str):
+        """
+        Test case for the public_repos method of the GithubOrgClient class.
+
+        Args:
+            mock_get_json (MagicMock): A mock object for the get_json method.
+            license (Union[str, None]): The license key for the repository.
+                Can be None.
+            name (str): The name of the repository.
+
+        Returns:
+            None
+        """
+
+        payload = [
+            {'name': name,
+             'license': {'key': license} if license else None}
+        ]
+        mock_get_json.return_value = payload
+
+        with patch('client.GithubOrgClient._public_repos_url',
+                   new_callable=PropertyMock) as mock_pru:
+            mock_pru.return_value = 'http://xclr.io'
+
+            github_client = GithubOrgClient('xclr')
+
+            self.assertEqual(github_client.public_repos(license), [name])
+            mock_get_json.assert_called_once_with('http://xclr.io')
+            mock_pru.assert_called_once()
 
 
 if __name__ == '__main__':
