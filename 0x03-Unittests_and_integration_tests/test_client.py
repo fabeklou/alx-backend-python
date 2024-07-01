@@ -10,8 +10,9 @@ Date: [June 30, 2024]
 
 import unittest
 from unittest.mock import Mock, MagicMock, patch, PropertyMock
-from parameterized import parameterized, param
+from parameterized import parameterized, param, parameterized_class
 from client import GithubOrgClient
+from fixtures import TEST_PAYLOAD
 from utils import get_json
 from typing import List, Dict, Union
 
@@ -147,6 +148,46 @@ class TestGithubOrgClient(unittest.TestCase):
             self.assertTrue(has_license)
         else:
             self.assertFalse(has_license)
+
+
+@parameterized_class(
+    ("org_payload", "repos_payload", "expected_repos", "apache2_repos"),
+    TEST_PAYLOAD
+)
+class TestIntegrationGithubOrgClient(unittest.TestCase):
+    """
+    A test case class for integration testing the GithubOrgClient class.
+    """
+
+    @classmethod
+    def setUpClass(cls):
+        """
+        Set up the test class before running any test cases.
+
+        This method is called once before any test cases in the
+        test class are executed.
+        It is used to perform any necessary setup steps that are
+        common to all test cases.
+
+        Args:
+            cls: The class object representing the test class.
+
+        Returns:
+            None
+        """
+        cls.get_patcher = patch(
+            'requests.get', side_effect=cls.mocked_requests_get)
+        cls.mock_get = cls.get_patcher.start()
+
+    @classmethod
+    def tearDownClass(cls):
+        """
+        This method is called after all the test methods
+        in the test case have been run.
+        It is used to perform any necessary clean-up actions,
+        such as stopping patchers or closing resources.
+        """
+        cls.get_patcher.stop()
 
 
 if __name__ == '__main__':
