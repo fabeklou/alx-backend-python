@@ -156,38 +156,93 @@ class TestGithubOrgClient(unittest.TestCase):
 )
 class TestIntegrationGithubOrgClient(unittest.TestCase):
     """
-    A test case class for integration testing the GithubOrgClient class.
+    A test case class for integration testing of the GithubOrgClient class.
+
+    This class contains test methods to verify the functionality
+    of the GithubOrgClient class
+    for retrieving public repositories and their licenses
+    from a GitHub organization.
+
+    Attributes:
+        org_payload (dict): A dictionary representing the
+            organization payload.
+        repos_payload (dict): A dictionary representing
+            the repositories payload.
+        expected_repos (list): A list of expected repositories.
+        apache2_repos (list): A list of repositories
+            with Apache 2.0 license.
+
+    Methods:
+        setUpClass(cls): A class method that sets up the necessary
+            patching for the tests.
+        tearDownClass(cls): A class method that stops the patching
+            after the tests.
+        test_public_repos(self): A test method to verify
+            the public_repos() method.
+        test_public_repos_with_license(self): A test method to verify
+            the public_repos() method with a specific license.
     """
 
     @classmethod
     def setUpClass(cls):
         """
-        Set up the test class before running any test cases.
+        Set up the necessary patching for the tests.
 
-        This method is called once before any test cases in the
-        test class are executed.
-        It is used to perform any necessary setup steps that are
-        common to all test cases.
-
-        Args:
-            cls: The class object representing the test class.
-
-        Returns:
-            None
+        This class method is called before any test methods in the class.
+        It sets up the patching for the 'requests.get'
+        method to return the desired payloads.
         """
-        cls.get_patcher = patch(
-            'requests.get', side_effect=cls.mocked_requests_get)
-        cls.mock_get = cls.get_patcher.start()
+        cls.get_patcher = patch('requests.get',
+                                **{'return_value.json.side_effect':
+                                    [cls.org_payload, cls.repos_payload,
+                                     cls.org_payload, cls.repos_payload]})
+
+        cls.mock = cls.get_patcher.start()
 
     @classmethod
     def tearDownClass(cls):
         """
-        This method is called after all the test methods
-        in the test case have been run.
-        It is used to perform any necessary clean-up actions,
-        such as stopping patchers or closing resources.
+        Stop the patching after the tests.
+
+        This class method is called after all test methods
+        in the class have been run.
+        It stops the patching for the 'requests.get' method.
         """
         cls.get_patcher.stop()
+
+    def test_public_repos(self):
+        """
+        Test the public_repos() method.
+
+        This test method verifies that the public_repos()
+        method of the GithubOrgClient class
+        returns the expected repositories and makes the correct API calls.
+        """
+        github_client = GithubOrgClient("xclr")
+
+        self.assertEqual(github_client.org, self.org_payload)
+        self.assertEqual(github_client.repos_payload, self.repos_payload)
+        self.assertEqual(github_client.public_repos(), self.expected_repos)
+        self.assertEqual(github_client.public_repos("XLICENSE"), [])
+        self.mock.assert_called()
+
+    def test_public_repos_with_license(self):
+        """
+        Test the public_repos() method with a specific license.
+
+        This test method verifies that the public_repos()
+        method of the GithubOrgClient class
+        returns the expected repositories with a specific license and makes
+        the correct API calls.
+        """
+        github_client = GithubOrgClient("xclr")
+
+        self.assertEqual(github_client.public_repos(),
+                         self.expected_repos)
+        self.assertEqual(github_client.public_repos("XLICENSE"), [])
+        self.assertEqual(github_client.public_repos("apache-2.0"),
+                         self.apache2_repos)
+        self.mock.assert_called()
 
 
 if __name__ == '__main__':
